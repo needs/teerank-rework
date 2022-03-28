@@ -45,10 +45,7 @@ def get(address: str, clients_order=None) -> dict:
                 name
 
                 map {
-                    name
-                    gameType {
-                        name
-                    }
+                    id
                 }
 
                 numPlayers
