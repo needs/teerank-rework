@@ -6,7 +6,6 @@ from time import sleep
 import logging
 
 import shared.database.graphql
-import shared.database.redis
 
 from backend.server_pool import server_pool
 from backend.master_server import MasterServer
@@ -21,7 +20,6 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
 
     shared.database.graphql.init('dgraph-alpha', '8080', True)
-    shared.database.redis.init('redis', '8080')
 
     for address in backend.database.master_server.all_addresses():
         server_pool.add(MasterServer(address))

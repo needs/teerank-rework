@@ -10,10 +10,6 @@ services:
     build:
       dockerfile: backend/Dockerfile
       target: production
-    depends_on:
-      - redis
     ports:
       - "8311:8311/udp"
 
-  redis:
-    image: redis:6

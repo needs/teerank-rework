@@ -28,10 +28,10 @@ This project is a reboot of teerank.com.  The former was written in C and used
 SQLite.  While good, this technologies are arguably not the best tools in the
 box for making a ranking website.
 
-This project instead relies on Python, Redis and Flask.  Performance is not
+This project instead relies on Python, Flask and Dgraph.  Performance is not
 really a concern so Python is a good language of choice, as it improves
-developement speed and is accessible to more people.  Redis is handy because
-it provides a way to sort our players directly while SQLite doesn't.
+developement speed and is accessible to more people.  Dgraph is handy because
+its easier to use than SQLite.
 
 Finally, the old teerank frontend was a C program compiled into a CGI which
 then was plugged into Nginx.  It worked, but it was difficult to setup.  We
