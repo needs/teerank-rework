@@ -4,7 +4,7 @@ Operations on type Map.
 
 from shared.database.graphql import graphql
 
-import backend.database.gametype
+from backend.database.gametype import id_none as gametype_id_none, ref as gametype_ref
 
 
 def ref(map_id):
@@ -12,20 +12,29 @@ def ref(map_id):
     return { 'id': map_id }
 
 
-def get(gametype_id: str, name: str) -> dict:
+_ALL_FIELDS = "id, name, gameType { id }"
+
+def get(gametype_id: str, name: str, fields: str = None) -> dict:
     """
-    Get Map with the given name for the given gametype ID, and create if it does not exist.
+    Get Map fields with the given name for the given gametype ID.
+
+    Create the map if it does not exist yet.
     """
+
+    if fields is None:
+        fields = _ALL_FIELDS
+
+    if fields == 'id' \
+        and gametype_id == gametype_id_none() \
+        and name is None \
+        and get.id_none is not None:
+        return get.id_none
 
     value = graphql("""
         query($gametype_id: ID!, $map_name: String) {
             getGameType(id: $gametype_id) {
                 maps(filter: { name: {eq: $map_name }}) {
-                    id
-                    name
-                    gameType {
-                        id
-                    }
+                    """ + fields + """
                 }
             }
         }
@@ -40,80 +49,43 @@ def get(gametype_id: str, name: str) -> dict:
             mutation($map: AddMapInput!) {
                 addMap(input: [$map]) {
                     map {
-                        id
-                        name
-                        gameType {
-                            id
-                        }
+                        """ + fields + """
                     }
                 }
             }
             """, {
                 'map': {
                     'name': name,
-                    'gameType': backend.database.gametype.ref(gametype_id)
+                    'gameType': gametype_ref(gametype_id)
                 },
             }
         )['addMap']['map']
 
+    if fields == 'id' \
+        and gametype_id == gametype_id_none() \
+        and name is None:
+        get.id_none = value[0]
+
     return value[0]
 
+get.id_none = None
 
-def gametype_name(map_id: str) -> str:
+
+def query(map_id: str, fields: str = None) -> str:
     """
-    Get gametype given the map ID.
+    Query map info.
     """
+
+    if fields is None:
+        fields = _ALL_FIELDS
 
     return graphql("""
         query($map_id: ID!) {
             getMap(id: $map_id) {
-                gameType {
-                    name
-                }
+                """ + fields + """
             }
         }
         """, {
             'map_id': map_id
         }
-    )['getMap']['gameType']['name']
-
-
-def id_all(map_id: str) -> str:
-    """
-    From the given map ID, get the map that has its name null for the given gametype.
-    """
-
-    gametype = graphql("""
-        query($map_id: ID!) {
-            getMap(id: $map_id) {
-                gameType {
-                    id
-                    maps(filter: { name: { eq: null } }) {
-                        id
-                    }
-                }
-            }
-        }
-        """, {
-            'map_id': map_id
-        }
-    )['getMap']['gameType']
-
-    if gametype['maps']:
-        return gametype['maps'][0]['id']
-
-    return graphql("""
-        mutation($map: AddMapInput!) {
-            addMap(input: [$map]) {
-                map {
-                    id
-                }
-            }
-        }
-        """, {
-            'map': {
-                'name': None,
-                'gameType': backend.database.gametype.ref(gametype['id'])
-            },
-        }
-    )['addMap']['map'][0]['id']
+    )['getMap']

@@ -57,9 +57,9 @@ def rank(old: dict, new: dict) -> bool:
 
     # Make sure that gametype can be ranked.
 
-    gametype_name = backend.database.map.gametype_name(new['map']['id'])
+    gametype = backend.database.map.query(new['map']['id'], "gameType { id, name }")['gameType']
 
-    if gametype_name not in ('CTF', 'DM', 'TDM'):
+    if gametype['name'] not in ('CTF', 'DM', 'TDM'):
         return False
 
     # Create a list of all players that are ingame in both old and new state.
@@ -102,7 +102,7 @@ def rank(old: dict, new: dict) -> bool:
     #
     # We do this for each combination of game type and map name.
 
-    map_id_all = backend.database.map.id_all(new['map']['id'])
+    map_id_all = backend.database.map.get(gametype['id'], None, 'id')['id']
 
     for map_id in (new['map']['id'], map_id_all):
         for player in players:
@@ -125,7 +125,7 @@ def rank(old: dict, new: dict) -> bool:
 
             logging.info(
                 'Gametype: %s: map %s: player %s: new_score: %d',
-                gametype_name, new['map']['id'], player.name, player.info['score']
+                gametype['name'], new['map']['id'], player.name, player.info['score']
             )
 
     return True

@@ -8,6 +8,8 @@ from enum import IntEnum
 from backend.packet import Packet, PacketException
 from backend.rank import rank
 from backend.server import Server
+from backend.server_pool import ServerPool
+import backend.playtime
 
 import backend.database.clan
 import backend.database.player
@@ -120,6 +122,8 @@ class GameServer(Server):
         self.add_references(self.state)
         self.process_state(self.state)
         backend.database.game_server.upsert(self.state)
+
+        backend.playtime.update(ServerPool.POLL_DELAY, self.state)
 
         # Rank players after saving server so that player already exist in the
         # database.
