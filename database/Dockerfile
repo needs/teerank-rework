@@ -25,3 +25,18 @@ RUN python -m grpc_tools.protoc \
 	rm *.proto
 
 CMD [ "python", "-u", "database/sources/main.py" ]
+
+#
+# Database service tests.
+#
+
+FROM production AS test
+
+# Install dependencies.
+COPY database/tests/requirements.txt database/tests/requirements.txt
+RUN pip install --no-cache-dir -r database/tests/requirements.txt
+
+# Copy tests.
+COPY database/tests database/tests
+
+CMD [ "pytest" ]

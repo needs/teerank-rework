@@ -1,0 +1,6 @@
+services:
+  database-test:
+    build:
+      context: ..
+      dockerfile: database/Dockerfile
+      target: test

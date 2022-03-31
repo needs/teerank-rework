@@ -3,8 +3,8 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 message AllServersResponse {
-	repeated string master_servers_addresse = 1;
-	repeated string game_servers_addresse = 2;
+	repeated string master_servers_address = 1;
+	repeated string game_servers_address = 2;
 }
 
 service Database {

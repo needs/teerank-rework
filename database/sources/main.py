@@ -2,17 +2,11 @@ from concurrent import futures
 import grpc
 import database_pb2
 import database_pb2_grpc
+import rpc
 
 class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
-    def all_servers(self, request, context):
-        return database_pb2.AllServersResponse(game_servers_addresse=[
-        ], master_servers_addresse=[
-            'master1.teeworlds.com:8300',
-            'master2.teeworlds.com:8300',
-            'master3.teeworlds.com:8300',
-            'master4.teeworlds.com:8300'
-        ])
-
+    def all_servers(self, _request, _context):
+        return rpc.all_servers()
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
