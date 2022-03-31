@@ -38,11 +38,7 @@ RUN python -m grpc_tools.protoc -Iprotos --mypy_out=protos protos/*.proto
 
 # Copy tests.
 COPY database/tests tests
-RUN mv \
-	tests/pytest.ini \
-	tests/.coveragerc \
-	tests/.pylintrc \
-	.
+RUN mv tests/setup.cfg .
 
 # Run service.
 CMD [ "pytest" ]
