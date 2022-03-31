@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+message RankRequest {
+	string address = 1;
+
+	string gametype = 2;
+	string map = 3;
+
+	message Client {
+		string name = 1;
+		string clan = 2;
+		int32 country = 3;
+		int32 score = 4;
+		bool ingame = 5;
+	}
+
+	repeated Client clients = 4;
+}
+
+service Rank {
+	rpc rank(RankRequest) returns (google.protobuf.Empty) {}
+}

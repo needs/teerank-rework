@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+message UpdateRequest {
+	string address = 1;
+
+	enum Type {
+		UNKNOWN = 0;
+		VANILLA = 1;
+		LEGACY_64 = 2;
+		EXTENDED = 3;
+	}
+
+	Type type = 2;
+
+	string version = 3;
+	string name = 4;
+
+	string gametype = 5;
+	string map = 6;
+
+	message Client {
+		string name = 1;
+		string clan = 2;
+		int32 country = 3;
+		int32 score = 4;
+		bool ingame = 5;
+	}
+
+	repeated Client clients = 7;
+}
+
+service Update {
+	rpc update(UpdateRequest) returns (google.protobuf.Empty) {}
+}

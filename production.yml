@@ -1,0 +1,30 @@
+services:
+  poll:
+    build:
+      context: .
+      dockerfile: poll/Dockerfile
+      target: production
+
+  update:
+    build:
+      context: .
+      dockerfile: update/Dockerfile
+      target: production
+    ports:
+      - "8001:8001/tcp"
+
+  rank:
+    build:
+      context: .
+      dockerfile: rank/Dockerfile
+      target: production
+    ports:
+      - "8002:8002/tcp"
+
+  database:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+      target: production
+    ports:
+      - "8003:8003/tcp"
