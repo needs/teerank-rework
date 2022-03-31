@@ -1,0 +1,37 @@
+services:
+  poll-test:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: poll
+
+  update-test:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: update
+    depends_on:
+      poll-test:
+        condition: service_completed_successfully
+
+  rank-test:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: rank
+    depends_on:
+      update-test:
+        condition: service_completed_successfully
+
+  database-test:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: database
+    depends_on:
+      rank-test:
+        condition: service_completed_successfully
