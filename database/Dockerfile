@@ -5,26 +5,21 @@
 FROM python:3 AS production
 
 WORKDIR /usr/src/app
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/database/sources"
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/sources:/usr/src/app/protos"
 
 # Install dependencies.
-COPY database/sources/requirements.txt database/sources/requirements.txt
-RUN pip install --no-cache-dir -r database/sources/requirements.txt
+COPY database/sources/requirements.txt sources/requirements.txt
+RUN pip install --no-cache-dir -r sources/requirements.txt
 
 # Copy sources.
-COPY database/sources database/sources
+COPY database/sources sources
 
 # Generate proto files.
-COPY database/database.proto database.proto
-RUN python -m grpc_tools.protoc \
-	--proto_path=. \
-	--python_out=database/sources \
-	--grpc_python_out=database/sources \
-	*.proto \
-	&& \
-	rm *.proto
+COPY database/protos protos
+RUN python -m grpc_tools.protoc -Iprotos --python_out=protos --grpc_python_out=protos protos/*.proto
 
-CMD [ "python", "-u", "database/sources/main.py" ]
+# Run service.
+CMD [ "python", "-u", "sources/main.py" ]
 
 #
 # Database service tests.
@@ -32,11 +27,13 @@ CMD [ "python", "-u", "database/sources/main.py" ]
 
 FROM production AS test
 
-# Install dependencies.
-COPY database/tests/requirements.txt database/tests/requirements.txt
-RUN pip install --no-cache-dir -r database/tests/requirements.txt
+# Install tests dependencies.
+COPY database/tests/requirements.txt tests/requirements.txt
+RUN pip install --no-cache-dir -r tests/requirements.txt
 
 # Copy tests.
-COPY database/tests database/tests
+COPY database/tests tests
+RUN mv tests/pytest.ini pytest.ini
 
+# Run service.
 CMD [ "pytest" ]

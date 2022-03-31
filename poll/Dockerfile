@@ -17,7 +17,7 @@ COPY poll/sources poll/sources
 # Generate proto files.
 COPY update/update.proto update.proto
 COPY rank/rank.proto rank.proto
-COPY database/database.proto database.proto
+COPY database/protos/database.proto database.proto
 RUN python -m grpc_tools.protoc \
 	--proto_path=. \
 	--python_out=poll/sources \
