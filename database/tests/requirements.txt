@@ -4,3 +4,4 @@ pytest-cov
 pytest-mypy
 mypy-protobuf
 grpc-stubs
+pylint-protobuf

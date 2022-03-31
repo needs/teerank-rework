@@ -41,6 +41,7 @@ COPY database/tests tests
 RUN mv \
 	tests/pytest.ini \
 	tests/.coveragerc \
+	tests/.pylintrc \
 	.
 
 # Run service.
