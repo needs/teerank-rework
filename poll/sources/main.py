@@ -28,17 +28,17 @@ if __name__ == '__main__':
             for game_server_address in response.game_servers_address:
                 print(game_server_address)
 
-        except Exception as e:
+        except grpc.RpcError as e:
             print(e)
 
         try:
             update_stub.update(update_request)
-        except Exception as e:
+        except grpc.RpcError as e:
             print(e)
 
         try:
             rank_stub.rank(rank_request)
-        except Exception as e:
+        except grpc.RpcError as e:
             print(e)
 
         sleep(1)
