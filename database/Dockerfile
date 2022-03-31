@@ -33,7 +33,10 @@ RUN pip install --no-cache-dir -r tests/requirements.txt
 
 # Copy tests.
 COPY database/tests tests
-RUN mv tests/pytest.ini pytest.ini
+RUN mv \
+	tests/pytest.ini \
+	tests/.coveragerc \
+	.
 
 # Run service.
 CMD [ "pytest" ]
