@@ -24,4 +24,4 @@ RUN python -m grpc_tools.protoc \
 	&& \
 	rm update/update.proto
 
-CMD [ "python", "update/sources/main.py" ]
+CMD [ "python", "-u", "update/sources/main.py" ]

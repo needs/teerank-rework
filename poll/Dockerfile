@@ -26,4 +26,4 @@ RUN python -m grpc_tools.protoc \
 	&& \
 	rm *.proto
 
-CMD [ "python", "poll/sources/main.py" ]
+CMD [ "python", "-u", "poll/sources/main.py" ]

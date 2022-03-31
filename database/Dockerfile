@@ -24,4 +24,4 @@ RUN python -m grpc_tools.protoc \
 	&& \
 	rm *.proto
 
-CMD [ "python", "database/sources/main.py" ]
+CMD [ "python", "-u", "database/sources/main.py" ]

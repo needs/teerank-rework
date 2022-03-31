@@ -24,4 +24,4 @@ RUN python -m grpc_tools.protoc \
 	&& \
 	rm *.proto
 
-CMD [ "python", "rank/sources/main.py" ]
+CMD [ "python", "-u", "rank/sources/main.py" ]
