@@ -7,3 +7,4 @@ mypy-protobuf
 grpc-stubs
 flake8-docstrings
 pytest-black
+pytest-isort
