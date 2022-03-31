@@ -27,9 +27,14 @@ CMD [ "python", "-u", "sources/main.py" ]
 
 FROM production AS test
 
+ENV MYPYPATH "${MYPYPATH}:/usr/src/app/sources:/usr/src/app/protos"
+
 # Install tests dependencies.
 COPY database/tests/requirements.txt tests/requirements.txt
 RUN pip install --no-cache-dir -r tests/requirements.txt
+
+# Generate mypy stub files.
+RUN python -m grpc_tools.protoc -Iprotos --mypy_out=protos protos/*.proto
 
 # Copy tests.
 COPY database/tests tests

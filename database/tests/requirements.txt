@@ -1,3 +1,6 @@
 pytest
 pytest-pylint
 pytest-cov
+pytest-mypy
+mypy-protobuf
+grpc-stubs
