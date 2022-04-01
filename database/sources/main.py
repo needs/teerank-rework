@@ -16,7 +16,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
 
 
 def serve():
-    """Start gRRPC server."""
+    """Start gRPC server."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     database_pb2_grpc.add_DatabaseServicer_to_server(DatabaseServicer(), server)
 
