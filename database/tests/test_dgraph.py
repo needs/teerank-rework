@@ -4,10 +4,10 @@ import pytest
 from dgraph import Dgraph
 
 
-@pytest.fixture
-def dgraph():
+@pytest.fixture(name="dgraph")
+def fixture_dgraph():
     """Create a Dgraph instance with a schema for tests."""
-    return Dgraph(
+    dgraph = Dgraph(
         "dgraph-alpha",
         8080,
         """
@@ -16,6 +16,8 @@ def dgraph():
         }
         """,
     )
+    dgraph.drop_all_data()
+    return dgraph
 
 
 @pytest.fixture(name="store")

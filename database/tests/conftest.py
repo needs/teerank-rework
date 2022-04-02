@@ -4,7 +4,9 @@ import pytest
 from dgraph import Dgraph
 
 
-@pytest.fixture
-def dgraph():
+@pytest.fixture(name="dgraph")
+def fixture_dgraph():
     """Configure a Dgraph instance with the production schema."""
-    return Dgraph()
+    dgraph = Dgraph()
+    dgraph.drop_all_data()
+    return dgraph
