@@ -1,10 +1,30 @@
 services:
+  dgraph-zero:
+    image: dgraph/dgraph:latest
+    expose:
+      - 5080
+      - 6080
+    restart: on-failure
+    command: dgraph zero --my=dgraph-zero:5080
+
+  dgraph-alpha:
+    image: dgraph/dgraph:latest
+    depends_on:
+      - dgraph-zero
+    expose:
+      - 8080
+      - 9080
+    restart: on-failure
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080 --security "whitelist=172.16.0.0/12"
+
   database-test:
     build:
       dockerfile: config/python/Dockerfile
       target: test
       args:
         project: database
+    depends_on:
+      - dgraph-alpha
 
   poll-test:
     build:

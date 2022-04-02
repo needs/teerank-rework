@@ -30,8 +30,11 @@ CMD [ "python", "-u", "sources/main.py" ]
 FROM production AS test
 
 # Install tests dependencies.
-COPY config/python/tests/requirements.txt tests/requirements.txt
-RUN pip install --no-cache-dir -r tests/requirements.txt
+COPY config/python/tests/requirements.txt tests/requirements-config.txt
+COPY $project/tests/requirements.txt tests/requirements.txt
+RUN pip install --no-cache-dir \
+	-r tests/requirements-config.txt \
+	-r tests/requirements.txt
 
 # Generate mypy stub files.
 RUN python -m grpc_tools.protoc -Iprotos --mypy_out=protos protos/*.proto

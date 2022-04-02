@@ -3,7 +3,7 @@
 import database_pb2
 
 
-def run() -> database_pb2.AllServersResponse:
+def run(_dgraph) -> database_pb2.AllServersResponse:
     """Implement "all_servers" RPC."""
     return database_pb2.AllServersResponse(
         game_servers_address=[],
