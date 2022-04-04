@@ -2,23 +2,17 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 
-message UpdateRequest {
+message GameServerUpRequest {
 	string address = 1;
 
-	enum Type {
-		UNKNOWN = 0;
-		VANILLA = 1;
-		LEGACY_64 = 2;
-		EXTENDED = 3;
-	}
+	string version = 2;
+	string name = 3;
 
-	Type type = 2;
+	string gametype = 4;
+	string map = 5;
 
-	string version = 3;
-	string name = 4;
-
-	string gametype = 5;
-	string map = 6;
+	int32 max_clients = 6;
+	int32 max_players = 7;
 
 	message Client {
 		string name = 1;
@@ -28,9 +22,21 @@ message UpdateRequest {
 		bool ingame = 5;
 	}
 
-	repeated Client clients = 7;
+	repeated Client clients = 8;
+}
+
+message MasterServerUpRequest {
+	string address = 1;
+	repeated string game_servers_address = 2;
+}
+
+message MasterServerDownRequest {
+	string address = 1;
 }
 
 service Update {
-	rpc update(UpdateRequest) returns (google.protobuf.Empty) {}
+	rpc game_server_up(GameServerUpRequest) returns (google.protobuf.Empty) {}
+	rpc master_server_up(MasterServerUpRequest) returns (google.protobuf.Empty) {}
+	rpc master_server_down(MasterServerDownRequest) returns (google.protobuf.Empty) {}
 }
+
