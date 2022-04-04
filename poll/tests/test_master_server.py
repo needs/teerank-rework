@@ -6,7 +6,7 @@ from packet import Packet
 
 def test_master_server_start_polling():
     """Test start_polling()."""
-    master_server = MasterServer("master1.teeworlds.com:8300", None)
+    master_server = MasterServer("test-master-server:8300", None)
 
     packets = master_server.start_polling()
 

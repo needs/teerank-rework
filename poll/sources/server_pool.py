@@ -6,8 +6,9 @@ import random
 import select
 import time
 from dataclasses import dataclass, field
-from socket import AF_INET, SOCK_DGRAM, gethostname
+from socket import AF_INET, SOCK_DGRAM, gethostbyname, gethostname
 from socket import socket as Socket
+from urllib.parse import urlparse
 
 from packet import Packet, PacketException
 from server import Server
@@ -28,6 +29,7 @@ class ServerPool:
     @dataclass(order=True)
     class _Entry:
         server: Server = field(compare=False)
+        socket_address: tuple[str, int] = field(init=False, compare=False)
         poll_time: float = field(init=False)
         poll_failure: int = 0
 
@@ -36,6 +38,14 @@ class ServerPool:
             # Randomize poll delay so that servers are evenly spread for polling,
             # and that should decrease packet loss even further.
             self.poll_time = time.time() + random.randrange(ServerPool.POLL_DELAY)
+
+            # Extract server socket address.
+            url = urlparse("//" + self.server.address)
+
+            self.socket_address = (
+                gethostbyname(url.hostname),
+                url.port if url.port else 8300,
+            )
 
     def __init__(self):
         """Initialize a server pool."""
@@ -119,7 +129,7 @@ class ServerPool:
             packets = server.start_polling()
 
             for packet in packets:
-                self._socket.sendto(bytes(packet), server.socket_address)
+                self._socket.sendto(bytes(packet), entry.socket_address)
 
-            self._batch[server.socket_address] = entry
+            self._batch[entry.socket_address] = entry
             packet_count += len(packets)
