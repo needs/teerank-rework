@@ -65,3 +65,21 @@ def test_master_server_down(master_server, server_pool, update_stub):
     assert len(update_stub.up_requests) == 0
     assert len(update_stub.down_requests) == 1
     assert update_stub.down_requests[0].address == master_server.address
+
+
+def test_master_server_no_server(master_server, server_pool, update_stub):
+    """Test when master server answer with no servers."""
+    master_server.start_polling()
+
+    packet = Packet()
+    packet.pack_bytes(bytearray(b"\x00" * 10))
+    packet.pack_bytes(bytearray(b"lis2"))
+
+    master_server.process_packet(packet)
+    master_server.stop_polling(update_stub, None)
+
+    assert server_pool.servers == []
+
+    assert len(update_stub.down_requests) == 0
+    assert len(update_stub.up_requests) == 1
+    assert update_stub.up_requests[0].address == master_server.address
