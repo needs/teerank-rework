@@ -147,16 +147,16 @@ class GameServer(Server):
 
         if packet_type_bytes == b"inf3":
             packet_type = GameServerType.VANILLA
-            unpack = self._process_packet_vanilla
+            unpack = GameServer._process_packet_vanilla
         elif packet_type_bytes == b"dtsf":
             packet_type = GameServerType.LEGACY_64
-            unpack = self._process_packet_legacy_64
+            unpack = GameServer._process_packet_legacy_64
         elif packet_type_bytes == b"iext":
             packet_type = GameServerType.EXTENDED
-            unpack = self._process_packet_extended
+            unpack = GameServer._process_packet_extended
         elif packet_type_bytes == b"iex+":
             packet_type = GameServerType.EXTENDED
-            unpack = self._process_packet_extended_more
+            unpack = GameServer._process_packet_extended_more
         else:
             raise PacketException("Packet type not supported.")
 
@@ -180,7 +180,8 @@ class GameServer(Server):
                 # Replace old state with the new one.
                 self._state = state
 
-    def _process_packet_vanilla(self, packet: Packet) -> dict:
+    @staticmethod
+    def _process_packet_vanilla(packet: Packet) -> dict:
         """Parse the default response of the vanilla client."""
         state: dict = {}
 
@@ -210,7 +211,8 @@ class GameServer(Server):
 
         return state
 
-    def _process_packet_legacy_64(self, packet: Packet) -> dict:
+    @staticmethod
+    def _process_packet_legacy_64(packet: Packet) -> dict:
         """Parse legacy 64 packet."""
         state: dict = {}
 
@@ -245,7 +247,8 @@ class GameServer(Server):
 
         return state
 
-    def _process_packet_extended(self, packet: Packet) -> dict:
+    @staticmethod
+    def _process_packet_extended(packet: Packet) -> dict:
         """Parse the extended server info packet."""
         state: dict = {}
 
@@ -280,7 +283,8 @@ class GameServer(Server):
 
         return state
 
-    def _process_packet_extended_more(self, packet: Packet) -> dict:
+    @staticmethod
+    def _process_packet_extended_more(packet: Packet) -> dict:
         """Parse the extended server info packet."""
         state: dict = {"type": GameServerType.EXTENDED, "clients": []}
 
