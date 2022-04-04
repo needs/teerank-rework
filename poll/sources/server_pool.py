@@ -6,8 +6,7 @@ import random
 import select
 import time
 from dataclasses import dataclass, field
-from socket import AF_INET, SOCK_DGRAM, gethostbyname, gethostname
-from socket import socket as Socket
+from socket import gethostbyname
 from urllib.parse import urlparse
 
 from packet import Packet, PacketException
@@ -47,21 +46,12 @@ class ServerPool:
                 url.port if url.port else 8300,
             )
 
-    def __init__(self):
+    def __init__(self, socket):
         """Initialize a server pool."""
         self._entries = []
         self._servers = {}
         self._batch = {}
-        self._socket = Socket(family=AF_INET, type=SOCK_DGRAM)
-
-        # Bind socket to a specific port to be able to tell docker which port to
-        # expose in order to receive packets.
-
-        host = gethostname()
-        port = 8000
-
-        self._socket.bind((host, port))
-        logging.info("Socket bound to %s:%d", host, port)
+        self._socket = socket
 
     def __contains__(self, address: str) -> bool:
         """Return whether or not the given address is in the server pool."""

@@ -1,5 +1,7 @@
 """Launch poll service."""
 
+from socket import AF_INET, SOCK_DGRAM, gethostname
+from socket import socket as Socket
 from time import sleep
 
 import database_pb2_grpc
@@ -18,7 +20,12 @@ if __name__ == "__main__":
         grpc.insecure_channel("database:8003")
     )
 
-    server_pool = ServerPool()
+    # Bind socket to a specific port to be able to tell docker which port to
+    # expose in order to receive packets.
+    socket = Socket(family=AF_INET, type=SOCK_DGRAM)
+    socket.bind((gethostname(), 8000))
+
+    server_pool = ServerPool(socket)
 
     response = database_stub.all_servers(google.protobuf.empty_pb2.Empty())
 
