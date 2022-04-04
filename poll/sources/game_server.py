@@ -92,7 +92,7 @@ class GameServer(Server):
                 address=self.address,
                 version=self._state["version"],
                 name=self._state["name"],
-                gametype=self._state["gametype"],
+                gametype=self._state["gameType"],
                 map=self._state["map"],
                 max_clients=self._state["maxClients"],
                 max_players=self._state["maxPlayers"],
@@ -109,10 +109,10 @@ class GameServer(Server):
             )
         )
 
-        rank_stub.update(
+        rank_stub.rank(
             rank_pb2.RankRequest(
                 address=self.address,
-                gametype=self._state["gametype"],
+                gametype=self._state["gameType"],
                 map=self._state["map"],
                 clients=[
                     rank_pb2.RankRequest.Client(
@@ -201,7 +201,7 @@ class GameServer(Server):
         while packet.unpack_remaining() >= 5:
             state["clients"].append(
                 {
-                    "player": packet.unpack(),
+                    "name": packet.unpack(),
                     "clan": packet.unpack(),
                     "country": packet.unpack_int(),
                     "score": packet.unpack_int(),
@@ -237,7 +237,7 @@ class GameServer(Server):
         while packet.unpack_remaining() >= 5:
             state["clients"].append(
                 {
-                    "player": packet.unpack(),
+                    "name": packet.unpack(),
                     "clan": packet.unpack(),
                     "country": packet.unpack_int(),
                     "score": packet.unpack_int(),
@@ -272,7 +272,7 @@ class GameServer(Server):
         while packet.unpack_remaining() >= 6:
             state["clients"].append(
                 {
-                    "player": packet.unpack(),
+                    "name": packet.unpack(),
                     "clan": packet.unpack(),
                     "country": packet.unpack_int(),
                     "score": packet.unpack_int(),
@@ -294,7 +294,7 @@ class GameServer(Server):
         while packet.unpack_remaining() >= 6:
             state["clients"].append(
                 {
-                    "player": packet.unpack(),
+                    "name": packet.unpack(),
                     "clan": packet.unpack(),
                     "country": packet.unpack_int(),
                     "score": packet.unpack_int(),

@@ -15,24 +15,6 @@ def lis2_packet():
     return packet
 
 
-@pytest.fixture(name="update_stub")
-def fixture_update_stub():
-    """Create a fake update stub for testing."""
-
-    class UpdateStub:
-        def __init__(self):
-            self.up_requests = []
-            self.down_requests = []
-
-        def master_server_up(self, request):
-            self.up_requests.append(request)
-
-        def master_server_down(self, request):
-            self.down_requests.append(request)
-
-    return UpdateStub()
-
-
 @pytest.fixture(name="server_pool")
 def fixture_server_pool():
     """Create a fake server pool for testing."""
@@ -72,9 +54,9 @@ def test_master_server_down(master_server, server_pool, update_stub):
 
     assert server_pool.servers == []
 
-    assert len(update_stub.up_requests) == 0
-    assert len(update_stub.down_requests) == 1
-    assert update_stub.down_requests[0].address == master_server.address
+    assert len(update_stub.master_up_requests) == 0
+    assert len(update_stub.master_down_requests) == 1
+    assert update_stub.master_down_requests[0].address == master_server.address
 
 
 def test_master_server_no_server(master_server, server_pool, update_stub):
@@ -88,9 +70,9 @@ def test_master_server_no_server(master_server, server_pool, update_stub):
 
     assert server_pool.servers == []
 
-    assert len(update_stub.down_requests) == 0
-    assert len(update_stub.up_requests) == 1
-    assert update_stub.up_requests[0].address == master_server.address
+    assert len(update_stub.master_down_requests) == 0
+    assert len(update_stub.master_up_requests) == 1
+    assert update_stub.master_up_requests[0].address == master_server.address
 
 
 def test_master_server_one_server_ipv4(master_server, server_pool, update_stub):
@@ -112,9 +94,9 @@ def test_master_server_one_server_ipv4(master_server, server_pool, update_stub):
     assert len(server_pool.servers) == 1
     assert server_pool.servers[0].address == f"{host}:{port}"
 
-    assert len(update_stub.down_requests) == 0
-    assert len(update_stub.up_requests) == 1
-    assert update_stub.up_requests[0].address == master_server.address
+    assert len(update_stub.master_down_requests) == 0
+    assert len(update_stub.master_up_requests) == 1
+    assert update_stub.master_up_requests[0].address == master_server.address
 
 
 def test_master_server_one_server_ipv6(master_server, server_pool, update_stub):
@@ -135,6 +117,6 @@ def test_master_server_one_server_ipv6(master_server, server_pool, update_stub):
     assert len(server_pool.servers) == 1
     assert server_pool.servers[0].address == f"[{host}]:{port}"
 
-    assert len(update_stub.down_requests) == 0
-    assert len(update_stub.up_requests) == 1
-    assert update_stub.up_requests[0].address == master_server.address
+    assert len(update_stub.master_down_requests) == 0
+    assert len(update_stub.master_up_requests) == 1
+    assert update_stub.master_up_requests[0].address == master_server.address

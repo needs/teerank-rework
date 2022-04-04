@@ -47,11 +47,15 @@ class Packet:
 
     def pack(self, string: str) -> None:
         """Pack string."""
-        self._data.extend(string.encode("utf-8"))
+        self._data.extend(string.encode("utf-8") + b"\x00")
 
     def pack_bytes(self, data: bytes) -> None:
         """Pack bytes."""
         self._data.extend(data)
+
+    def pack_int(self, value) -> None:
+        """Pack integer."""
+        self.pack(str(value))
 
     def __len__(self) -> int:
         """Packet data size (in bytes)."""
