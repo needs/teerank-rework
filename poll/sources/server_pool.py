@@ -53,16 +53,12 @@ class ServerPool:
         self._batch = {}
         self._socket = socket
 
-    def __contains__(self, address: str) -> bool:
-        """Return whether or not the given address is in the server pool."""
-        return address in self._servers
-
     def add(self, server: Server) -> None:
         """Add the given server to the pool."""
-        logging.info("Adding server %s", server)
-
-        heapq.heappush(self._entries, ServerPool._Entry(server))
-        self._servers[server.address] = server
+        if server.address not in self._servers:
+            logging.info("Adding server %s", server)
+            heapq.heappush(self._entries, ServerPool._Entry(server))
+            self._servers[server.address] = server
 
     def poll(self, update_stub, rank_stub) -> None:
         """Poll servers."""

@@ -72,7 +72,5 @@ class MasterServer(Server):
                 port = str(int.from_bytes(packet.unpack_bytes(2), byteorder="big"))
                 address = host + ":" + port
 
-                if address != self.address and address not in self._server_pool:
-                    self._server_pool.add(GameServer(address))
-
+                self._server_pool.add(GameServer(address))
                 self._game_servers_addresses.add(address)
