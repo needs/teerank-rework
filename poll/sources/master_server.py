@@ -28,7 +28,7 @@ class MasterServer(Server):
         # 10 bytes of padding and the 'req2' packet type.
         return [Packet(bytearray(b"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xffreq2"))]
 
-    def stop_polling(self, update_stub, rank_stub) -> bool:
+    def stop_polling(self, update_stub, _rank_stub) -> bool:
         """Stop master server polling."""
         # There is no reliable way to know when all packets have been received.
         # Therefor when at least one packet have been received, we considere
