@@ -7,6 +7,14 @@ from master_server import MasterServer
 from packet import Packet
 
 
+def lis2_packet():
+    """Create a "lis2" packet."""
+    packet = Packet()
+    packet.pack_bytes(bytearray(b"\x00" * 10))
+    packet.pack_bytes(bytearray(b"lis2"))
+    return packet
+
+
 @pytest.fixture(name="update_stub")
 def fixture_update_stub():
     """Create a fake update stub for testing."""
@@ -73,9 +81,7 @@ def test_master_server_no_server(master_server, server_pool, update_stub):
     """Test when master server answer with no servers."""
     master_server.start_polling()
 
-    packet = Packet()
-    packet.pack_bytes(bytearray(b"\x00" * 10))
-    packet.pack_bytes(bytearray(b"lis2"))
+    packet = lis2_packet()
 
     master_server.process_packet(packet)
     master_server.stop_polling(update_stub, None)
@@ -94,9 +100,7 @@ def test_master_server_one_server_ipv4(master_server, server_pool, update_stub):
 
     master_server.start_polling()
 
-    packet = Packet()
-    packet.pack_bytes(bytearray(b"\x00" * 10))
-    packet.pack_bytes(bytearray(b"lis2"))
+    packet = lis2_packet()
 
     packet.pack_bytes(bytearray(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff"))
     packet.pack_bytes(inet_pton(AF_INET, host))
@@ -120,9 +124,7 @@ def test_master_server_one_server_ipv6(master_server, server_pool, update_stub):
 
     master_server.start_polling()
 
-    packet = Packet()
-    packet.pack_bytes(bytearray(b"\x00" * 10))
-    packet.pack_bytes(bytearray(b"lis2"))
+    packet = lis2_packet()
 
     packet.pack_bytes(inet_pton(AF_INET6, host))
     packet.pack_bytes(port.to_bytes(2, byteorder="big"))
