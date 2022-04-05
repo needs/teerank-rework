@@ -294,6 +294,25 @@ def test_game_server_vanilla_into_extended(
     assert is_up([client2])
 
 
+def test_game_server_two_vanilla(
+    game_server, update_stub, rank_stub, client1, client2, is_up
+):
+    """Test when server receives two vanilla packets."""
+    game_server.start_polling()
+
+    packet = game_info_vanilla_packet(game_server, 1)
+    pack_client(packet, client1)
+    game_server.process_packet(packet)
+
+    packet = game_info_vanilla_packet(game_server, 1)
+    pack_client_extended(packet, client2)
+    game_server.process_packet(packet)
+
+    game_server.stop_polling(update_stub, rank_stub)
+
+    assert is_up([client2])
+
+
 def test_game_server_wrong_packet_type(game_server):
     """Test when server receives a packet with a wrong type."""
     game_server.start_polling()
