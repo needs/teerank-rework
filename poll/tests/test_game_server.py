@@ -90,6 +90,21 @@ def fixture_game_server():
     return GameServer("test-game-server:8300")
 
 
+@pytest.fixture(name="is_down")
+def fixture_is_down(game_server, rank_stub, update_stub):
+    """Return a function checking if the game server is down."""
+
+    def is_down():
+        return (
+            len(update_stub.game_up_requests) == 0
+            and len(update_stub.game_down_requests) == 1
+            and update_stub.game_down_requests[0].address == game_server.address
+            and len(rank_stub.rank_requests) == 0
+        )
+
+    return is_down
+
+
 @pytest.fixture(name="is_up")
 def fixture_is_up(game_server, rank_stub, update_stub):
     """Return a function checking if the game server is up with the given clients."""
@@ -120,6 +135,14 @@ def test_game_server_start_polling(game_server):
     assert len(packets) == 2
     assert packet_type(packets[0]) == b"gie3"
     assert packet_type(packets[1]) == b"fstd"
+
+
+def test_game_server_down(game_server, update_stub, rank_stub, is_down):
+    """Test handling of a down game server."""
+    game_server.start_polling()
+    game_server.stop_polling(update_stub, rank_stub)
+
+    assert is_down()
 
 
 def test_game_server_vanilla(game_server, update_stub, rank_stub, client1, is_up):

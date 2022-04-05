@@ -81,6 +81,12 @@ class GameServer(Server):
 
     def stop_polling(self, update_stub, rank_stub) -> bool:
         """Check any received data and process them."""
+        if not self._state:
+            update_stub.game_server_down(
+                update_pb2.GameServerDownRequest(address=self.address)
+            )
+            return False
+
         # Check that data is complete by comparing the number of clients
         # received against the number of clients advertised.
 
