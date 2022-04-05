@@ -24,6 +24,23 @@ def game_info_packet_header(game_server: GameServer, packet_type: bytes) -> Pack
     return packet
 
 
+def game_info_vanilla_packet(game_server: GameServer, num_clients: int):
+    """Create a game info packet with the extended format."""
+    packet = game_info_packet_header(game_server, b"inf3")
+
+    packet.pack("0.0.6")
+    packet.pack("test-server")
+    packet.pack("test-map")
+    packet.pack("test-gametype")
+    packet.pack_int(0)  # Flags
+    packet.pack_int(num_clients)  # Number of players.
+    packet.pack_int(16)  # Maximum number of players.
+    packet.pack_int(num_clients)  # Number of clients.
+    packet.pack_int(16)  # Maximum number of clients.
+
+    return packet
+
+
 def game_info_extended_packet(game_server: GameServer, num_clients: int):
     """Create a game info packet with the extended format."""
     packet = game_info_packet_header(game_server, b"iext")
@@ -173,21 +190,10 @@ def test_game_server_vanilla(game_server, update_stub, rank_stub, client1, is_up
     """Test sending a vanilla packet."""
     game_server.start_polling()
 
-    packet = game_info_packet_header(game_server, b"inf3")
-
-    packet.pack("0.0.6")
-    packet.pack("test-server")
-    packet.pack("test-map")
-    packet.pack("test-gametype")
-    packet.pack_int(0)  # Flags
-    packet.pack_int(1)  # Number of players.
-    packet.pack_int(16)  # Maximum number of players.
-    packet.pack_int(1)  # Number of clients.
-    packet.pack_int(16)  # Maximum number of clients.
-
+    packet = game_info_vanilla_packet(game_server, 1)
     pack_client(packet, client1)
-
     game_server.process_packet(packet)
+
     game_server.stop_polling(update_stub, rank_stub)
 
     assert is_up([client1])
@@ -267,3 +273,22 @@ def test_game_server_extended_incomplete(
     game_server.stop_polling(update_stub, rank_stub)
 
     assert is_incomplete()
+
+
+def test_game_server_vanilla_into_extended(
+    game_server, update_stub, rank_stub, client1, client2, is_up
+):
+    """Test when server receives vanilla packet and then an extended packet."""
+    game_server.start_polling()
+
+    packet = game_info_vanilla_packet(game_server, 1)
+    pack_client(packet, client1)
+    game_server.process_packet(packet)
+
+    packet = game_info_extended_packet(game_server, 1)
+    pack_client_extended(packet, client2)
+    game_server.process_packet(packet)
+
+    game_server.stop_polling(update_stub, rank_stub)
+
+    assert is_up([client2])
