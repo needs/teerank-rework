@@ -26,7 +26,7 @@ class Packet:
         if separator != b"\x00":
             raise PacketException("Cannot unpack a string.")
 
-        return data.decode("utf-8", "backslashreplace")
+        return data.decode("utf-8")
 
     def unpack_bytes(self, count: int) -> bytes:
         """Unpack bytes."""
