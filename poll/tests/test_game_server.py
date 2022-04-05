@@ -128,6 +128,20 @@ def fixture_is_up(game_server, rank_stub, update_stub):
     return is_up
 
 
+@pytest.fixture(name="is_incomplete")
+def fixture_is_incomplete(game_server, rank_stub, update_stub):
+    """Return a function checking if the game server state is incomplete."""
+
+    def is_incomplete():
+        return (
+            len(update_stub.game_up_requests) == 0
+            and len(update_stub.game_down_requests) == 0
+            and len(rank_stub.rank_requests) == 0
+        )
+
+    return is_incomplete
+
+
 def test_game_server_start_polling(game_server):
     """Test start_polling()."""
     packets = game_server.start_polling()
@@ -238,3 +252,18 @@ def test_game_server_extended_more(
     game_server.stop_polling(update_stub, rank_stub)
 
     assert is_up([client1, client2])
+
+
+def test_game_server_extended_incomplete(
+    game_server, update_stub, rank_stub, client1, is_incomplete
+):
+    """Test when game server state is incomplete."""
+    game_server.start_polling()
+
+    packet = game_info_extended_packet(game_server, 2)
+    pack_client_extended(packet, client1)
+    game_server.process_packet(packet)
+
+    game_server.stop_polling(update_stub, rank_stub)
+
+    assert is_incomplete()
