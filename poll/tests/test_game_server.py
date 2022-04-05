@@ -54,6 +54,22 @@ def fixture_game_server():
     return GameServer("test-game-server:8300")
 
 
+@pytest.fixture(name="is_up")
+def fixture_is_up(game_server, rank_stub, update_stub):
+    """Return a function checking if the game server is up."""
+
+    def is_up():
+        return (
+            len(update_stub.game_up_requests) == 1
+            and len(update_stub.game_down_requests) == 0
+            and update_stub.game_up_requests[0].address == game_server.address
+            and len(rank_stub.rank_requests) == 1
+            and rank_stub.rank_requests[0].address == game_server.address
+        )
+
+    return is_up
+
+
 def test_game_server_start_polling(game_server):
     """Test start_polling()."""
     packets = game_server.start_polling()
@@ -63,7 +79,7 @@ def test_game_server_start_polling(game_server):
     assert packet_type(packets[1]) == b"fstd"
 
 
-def test_game_server_vanilla(game_server, update_stub, rank_stub):
+def test_game_server_vanilla(game_server, update_stub, rank_stub, is_up):
     """Test sending a vanilla packet."""
     game_server.start_polling()
 
@@ -88,15 +104,10 @@ def test_game_server_vanilla(game_server, update_stub, rank_stub):
     game_server.process_packet(packet)
     game_server.stop_polling(update_stub, rank_stub)
 
-    assert len(update_stub.game_up_requests) == 1
-    assert len(update_stub.game_down_requests) == 0
-    assert update_stub.game_up_requests[0].address == game_server.address
-
-    assert len(rank_stub.rank_requests) == 1
-    assert rank_stub.rank_requests[0].address == game_server.address
+    assert is_up()
 
 
-def test_game_server_legacy_64(game_server, update_stub, rank_stub):
+def test_game_server_legacy_64(game_server, update_stub, rank_stub, is_up):
     """Test sending a legacy 64 packet."""
     game_server.start_polling()
 
@@ -123,12 +134,7 @@ def test_game_server_legacy_64(game_server, update_stub, rank_stub):
     game_server.process_packet(packet)
     game_server.stop_polling(update_stub, rank_stub)
 
-    assert len(update_stub.game_up_requests) == 1
-    assert len(update_stub.game_down_requests) == 0
-    assert update_stub.game_up_requests[0].address == game_server.address
-
-    assert len(rank_stub.rank_requests) == 1
-    assert rank_stub.rank_requests[0].address == game_server.address
+    assert is_up()
 
 
 def pack_client_extended(packet: Packet, client: dict) -> None:
@@ -162,7 +168,7 @@ def game_info_extended_packet(game_server: GameServer, num_clients: int):
     return packet
 
 
-def test_game_server_extended(game_server, update_stub, rank_stub, client1):
+def test_game_server_extended(game_server, update_stub, rank_stub, client1, is_up):
     """Test sending an extended packet."""
     game_server.start_polling()
 
@@ -172,19 +178,14 @@ def test_game_server_extended(game_server, update_stub, rank_stub, client1):
     game_server.process_packet(packet)
     game_server.stop_polling(update_stub, rank_stub)
 
-    assert len(update_stub.game_up_requests) == 1
-    assert len(update_stub.game_down_requests) == 0
-    assert update_stub.game_up_requests[0].address == game_server.address
-
-    assert len(rank_stub.rank_requests) == 1
-    assert rank_stub.rank_requests[0].address == game_server.address
+    assert is_up()
 
     assert len(update_stub.game_up_requests[0].clients) == 1
     assert update_stub.game_up_requests[0].clients[0].name == client1["name"]
 
 
 def test_game_server_extended_more(
-    game_server, update_stub, rank_stub, client1, client2
+    game_server, update_stub, rank_stub, client1, client2, is_up
 ):
     """Test sending an extended packet."""
     game_server.start_polling()
@@ -201,6 +202,8 @@ def test_game_server_extended_more(
     game_server.process_packet(packet)
 
     game_server.stop_polling(update_stub, rank_stub)
+
+    assert is_up()
 
     assert len(update_stub.game_up_requests[0].clients) == 2
     assert update_stub.game_up_requests[0].clients[0].name == client1["name"]
