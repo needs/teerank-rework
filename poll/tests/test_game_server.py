@@ -24,6 +24,30 @@ def game_info_packet_header(game_server: GameServer, packet_type: bytes) -> Pack
     return packet
 
 
+@pytest.fixture(name="client1")
+def fixture_client1():
+    """Return game server client."""
+    return {
+        "name": "test-client-1",
+        "clan": "test-clan-1",
+        "country": 0,
+        "score": 1,
+        "ingame": 1,
+    }
+
+
+@pytest.fixture(name="client2")
+def fixture_client2():
+    """Return game server client."""
+    return {
+        "name": "test-client-2",
+        "clan": "test-clan-2",
+        "country": 1,
+        "score": 2,
+        "ingame": 1,
+    }
+
+
 @pytest.fixture(name="game_server")
 def fixture_game_server():
     """Create a game server for testing."""
@@ -107,10 +131,18 @@ def test_game_server_legacy_64(game_server, update_stub, rank_stub):
     assert rank_stub.rank_requests[0].address == game_server.address
 
 
-def test_game_server_extended(game_server, update_stub, rank_stub):
-    """Test sending an extended packet."""
-    game_server.start_polling()
+def pack_client_extended(packet: Packet, client: dict) -> None:
+    """Pack the given client in the packet with the extended format."""
+    packet.pack(client["name"])
+    packet.pack(client["clan"])
+    packet.pack_int(client["country"])  # Country
+    packet.pack_int(client["score"])  # Score
+    packet.pack_int(client["ingame"])  # Ingame
+    packet.pack("reserved")
 
+
+def game_info_extended_packet(game_server: GameServer, num_clients: int):
+    """Create a game info packet with the extended format."""
     packet = game_info_packet_header(game_server, b"iext")
 
     packet.pack("0.0.6")
@@ -120,19 +152,22 @@ def test_game_server_extended(game_server, update_stub, rank_stub):
     packet.pack_int(0)  # Map size.
     packet.pack("test-gametype")
     packet.pack_int(0)  # Flags
-    packet.pack_int(1)  # Number of players.
+    packet.pack_int(num_clients)  # Number of players.
     packet.pack_int(16)  # Maximum number of players.
-    packet.pack_int(1)  # Number of clients.
+    packet.pack_int(num_clients)  # Number of clients.
     packet.pack_int(16)  # Maximum number of clients.
 
     packet.pack("reserved")  # Extra data.
 
-    packet.pack("test-player-1")
-    packet.pack("test-clan-1")
-    packet.pack_int(1)  # Country
-    packet.pack_int(2)  # Score
-    packet.pack_int(1)  # Ingame
-    packet.pack("reserved")
+    return packet
+
+
+def test_game_server_extended(game_server, update_stub, rank_stub, client1):
+    """Test sending an extended packet."""
+    game_server.start_polling()
+
+    packet = game_info_extended_packet(game_server, 1)
+    pack_client_extended(packet, client1)
 
     game_server.process_packet(packet)
     game_server.stop_polling(update_stub, rank_stub)
@@ -143,3 +178,34 @@ def test_game_server_extended(game_server, update_stub, rank_stub):
 
     assert len(rank_stub.rank_requests) == 1
     assert rank_stub.rank_requests[0].address == game_server.address
+
+    assert len(update_stub.game_up_requests[0].clients) == 1
+    assert update_stub.game_up_requests[0].clients[0].name == client1["name"]
+
+
+def test_game_server_extended_more(
+    game_server, update_stub, rank_stub, client1, client2
+):
+    """Test sending an extended packet."""
+    game_server.start_polling()
+
+    packet = game_info_extended_packet(game_server, 2)
+    pack_client_extended(packet, client1)
+
+    game_server.process_packet(packet)
+
+    packet = game_info_packet_header(game_server, b"iex+")
+    packet.pack_int(0)  # Packet number
+    packet.pack("reserved")  # Reserved
+    pack_client_extended(packet, client2)
+    game_server.process_packet(packet)
+
+    game_server.stop_polling(update_stub, rank_stub)
+
+    assert len(update_stub.game_up_requests[0].clients) == 2
+    assert update_stub.game_up_requests[0].clients[0].name == client1["name"]
+    assert update_stub.game_up_requests[0].clients[1].name == client2["name"]
+
+    assert len(rank_stub.rank_requests[0].clients) == 2
+    assert rank_stub.rank_requests[0].clients[0].name == client1["name"]
+    assert rank_stub.rank_requests[0].clients[1].name == client2["name"]

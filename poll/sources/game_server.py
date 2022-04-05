@@ -171,7 +171,7 @@ class GameServer(Server):
             if packet_type == state_type:
                 # Merge extended state, otherwise replace.
                 if packet_type == GameServerType.EXTENDED:
-                    state["clients"] += self._state.get("clients", [])
+                    state["clients"] = self._state.get("clients", []) + state["clients"]
                     self._state |= state
                 else:
                     self._state = state
