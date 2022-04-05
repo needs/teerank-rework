@@ -308,3 +308,26 @@ def test_game_server_wrong_packet_type(game_server):
         assert isinstance(exception, PacketException)
     else:
         assert False
+
+
+def test_game_server_wrong_token(game_server):
+    """Test when server receives a packet with a wrong token."""
+    game_server.start_polling()
+
+    packet = Packet()
+    packet.pack_bytes(b"\x00" * 10)
+    packet.pack_bytes(b"inf3")
+
+    # To make sure we always have a bad request token, we inverse token bytes
+    # value.
+    token = game_server._request_token[0:3]
+    token = bytes([token[1] ^ 0xFF, token[2] ^ 0xFF, token[0] ^ 0xFF])
+
+    packet.pack_int(int.from_bytes(token, byteorder="big"))
+
+    try:
+        game_server.process_packet(packet)
+    except Exception as exception:
+        assert isinstance(exception, PacketException)
+    else:
+        assert False
