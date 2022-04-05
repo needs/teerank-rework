@@ -1,7 +1,7 @@
 """Test master_server.py."""
 
 import pytest
-from game_server import GameServer
+from game_server import GameServer, GameServerType
 from packet import Packet
 
 
@@ -135,6 +135,16 @@ def test_game_server_start_polling(game_server):
     assert len(packets) == 2
     assert packet_type(packets[0]) == b"gie3"
     assert packet_type(packets[1]) == b"fstd"
+
+
+def test_game_server_start_polling_extended(game_server):
+    """Test start_polling() when game server supports extended packet format."""
+    game_server._state = {"type": GameServerType.EXTENDED}
+
+    packets = game_server.start_polling()
+
+    assert len(packets) == 1
+    assert packet_type(packets[0]) == b"gie3"
 
 
 def test_game_server_down(game_server, update_stub, rank_stub, is_down):
