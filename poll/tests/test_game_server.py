@@ -2,7 +2,7 @@
 
 import pytest
 from game_server import GameServer, GameServerType
-from packet import Packet
+from packet import Packet, PacketException
 
 
 def packet_type(packet):
@@ -292,3 +292,19 @@ def test_game_server_vanilla_into_extended(
     game_server.stop_polling(update_stub, rank_stub)
 
     assert is_up([client2])
+
+
+def test_game_server_wrong_packet_type(game_server):
+    """Test when server receives a packet with a wrong type."""
+    game_server.start_polling()
+
+    packet = Packet()
+    packet.pack_bytes(b"\x00" * 10)
+    packet.pack_bytes(b"xxxx")
+
+    try:
+        game_server.process_packet(packet)
+    except Exception as exception:
+        assert isinstance(exception, PacketException)
+    else:
+        assert False

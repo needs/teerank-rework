@@ -140,16 +140,7 @@ class GameServer(Server):
         packet.unpack_bytes(10)  # Padding
         packet_type_bytes = packet.unpack_bytes(4)
 
-        # Servers send token back as an integer that is a combination of token
-        # and extra_token fields of the packet we sent.  However the received
-        # token has some its byte mixed because of endianess and we need to swap
-        # some bytes to get the full token back.
-
-        token = packet.unpack_int().to_bytes(3, byteorder="big")
-        token = bytes([token[2], token[0], token[1]])
-
-        if token != self._request_token:
-            raise PacketException("Wrong request token.")
+        # Check packet type.
 
         if packet_type_bytes == b"inf3":
             packet_type = GameServerType.VANILLA
@@ -165,6 +156,17 @@ class GameServer(Server):
             unpack = GameServer._process_packet_extended_more
         else:
             raise PacketException("Packet type not supported.")
+
+        # Servers send token back as an integer that is a combination of token
+        # and extra_token fields of the packet we sent.  However the received
+        # token has some its byte mixed because of endianess and we need to swap
+        # some bytes to get the full token back.
+
+        token = packet.unpack_int().to_bytes(3, byteorder="big")
+        token = bytes([token[2], token[0], token[1]])
+
+        if token != self._request_token:
+            raise PacketException("Wrong request token.")
 
         # Merge received state into the new state.  This step is required
         # because new state can be received in many smaller parts.
