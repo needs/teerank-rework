@@ -34,6 +34,15 @@ services:
     depends_on:
       - graphql
 
+  gql-client-test:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: gql-client
+    depends_on:
+      - graphql-test
+
   database-test:
     build:
       dockerfile: config/python/Dockerfile
@@ -41,7 +50,7 @@ services:
       args:
         project: database
     depends_on:
-      - graphql-test
+      - gql-client-test
 
   poll-test:
     build:
