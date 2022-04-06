@@ -67,7 +67,10 @@ def fixture_query(client):
     return do
 
 
-def test_bad_encoding(store):
+@pytest.mark.parametrize(
+    "string", ["foo", "bar", "\x00", "\U000e0021", "\U000f0009", "\v", "\n", "null"]
+)
+def test_bad_encoding(store, string):
     """
     Test Dgraph encoding bug is fixed.
 
@@ -76,11 +79,8 @@ def test_bad_encoding(store):
     send user data to Dgraph, therefor a malicious user can use those escape
     sequence to make some query fail.
     """
-    strings = ["\x00", "\U000e0021", "\U000f0009", "\v", "\n", "null"]
+    test = {
+        "string": string,
+    }
 
-    for string in strings:
-        test = {
-            "string": string,
-        }
-
-        assert test == store(test)
+    assert test == store(test)
