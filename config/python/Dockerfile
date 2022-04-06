@@ -10,8 +10,11 @@ WORKDIR /usr/src/app
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/sources:/usr/src/app/protos"
 
 # Install dependencies.
+COPY config/python/sources/requirements.txt sources/requirements-config.txt
 COPY $project/sources/requirements.txt sources/requirements.txt
-RUN pip install --no-cache-dir -r sources/requirements.txt
+RUN pip install --no-cache-dir \
+	-r sources/requirements-config.txt \
+	-r sources/requirements.txt
 
 # Copy sources.
 COPY $project/sources sources
