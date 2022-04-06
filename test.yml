@@ -17,6 +17,23 @@ services:
     restart: on-failure
     command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080 --security "whitelist=172.16.0.0/12"
 
+  graphql:
+    build:
+      dockerfile: graphql/Dockerfile
+      target: production
+    tty: true
+    depends_on:
+      - dgraph-alpha
+    expose:
+      - 8080
+
+  graphql-test:
+    build:
+      dockerfile: graphql/Dockerfile
+      target: test
+    depends_on:
+      - graphql
+
   database-test:
     build:
       dockerfile: config/python/Dockerfile
@@ -24,7 +41,7 @@ services:
       args:
         project: database
     depends_on:
-      - dgraph-alpha
+      - graphql-test
 
   poll-test:
     build:
