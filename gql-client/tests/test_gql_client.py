@@ -1,6 +1,7 @@
 """Test GraphQLClient."""
 
 import http.client
+import json
 
 import pytest
 from gql_client import GraphQLClient
@@ -18,9 +19,12 @@ def fixture_client():
     connection = http.client.HTTPConnection("graphql:8080")
 
     connection.request("POST", "/alter", '{"drop_all": true}')
-    connection.getresponse().read()
+    response = connection.getresponse()
+    assert response.status == 200 and "errors" not in json.loads(response.read())
+
     connection.request("POST", "/admin/schema", schema)
-    connection.getresponse().read()
+    response = connection.getresponse()
+    assert response.status == 200 and "errors" not in json.loads(response.read())
 
     return GraphQLClient(connection, "/graphql")
 
