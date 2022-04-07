@@ -1,6 +1,7 @@
 """Intercept all traffic to /graphql."""
 
 import json
+import os
 
 
 def _explore(value, on_string):
@@ -29,9 +30,12 @@ def _unserialize_string(string):
     return json.loads(f'"{string}"')
 
 
+dgraph_host = os.environ.get("DGRAPH_HOST", "dgraph")
+
+
 def request(flow):
     """Route all traffic to dgraph and serialize data sent to /graphql."""
-    flow.request.host = "dgraph-alpha"
+    flow.request.host = dgraph_host
 
     if flow.request.path == "/graphql":
         content = json.loads(flow.request.content)
