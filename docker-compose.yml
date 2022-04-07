@@ -3,6 +3,12 @@ services:
     image: dgraph/standalone
     expose:
       - 8080
+    healthcheck:
+      test: ["CMD", "curl", "-IL", "localhost:6080/state"]
+      interval: 10s
+      start_period: 10s
+      timeout: 5s
+      retries: 3
 
   graphql:
     build:
@@ -10,7 +16,8 @@ services:
       target: production
     tty: true
     depends_on:
-      - dgraph
+      dgraph:
+        condition: service_healthy
     expose:
       - 8080
 
