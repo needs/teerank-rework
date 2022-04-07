@@ -16,7 +16,7 @@ class Dgraph:
     """Handle operations on a Dgraph endpoint."""
 
     _queries: dict[str, graphql.language.ast.DocumentNode]
-    DEFAULT_HOST = "dgraph-alpha"
+    DEFAULT_HOST = "graphql"
     DEFAULT_PORT = 8080
 
     def __init__(

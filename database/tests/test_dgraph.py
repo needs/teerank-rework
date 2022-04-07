@@ -8,9 +8,7 @@ from dgraph import Dgraph
 def fixture_dgraph():
     """Create a Dgraph instance with a schema for tests."""
     dgraph = Dgraph(
-        "dgraph-alpha",
-        8080,
-        """
+        schema="""
         type Test {
             string: String
         }
