@@ -8,19 +8,24 @@ lastest stable version at teerank.io.
 ```bash
 # Production
 $ docker-compose up --build
-
-# Run tests loop
-$ docker-compose -f docker-compose-test.yml -p teerank-dev up --build
-
-# Development server at localhost:80
-$ docker-compose -f docker-compose-development.yml -p teerank-test up --build
 ```
 
-I usually launch tests and the development server on two different shells.
-When a source file is changed, tests will be run again and the development
-server will be relaunch with the new version.  Hence once the containers are
-launched there is no need to run them again: just refresh your page in the
-browser and check test logs and that's it.
+Services will update as soon as a new version is deployed.
+
+# Development
+
+```bash
+# CI/CD
+$ act
+
+# Testing one project at a time:
+$ act -j test-$project
+
+# Testing everything
+$ act -W .github/workflows/test.yml
+```
+
+It's required that CI/CD can be run locally with `act`.
 
 # Legacy
 

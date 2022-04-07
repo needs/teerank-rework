@@ -1,0 +1,75 @@
+name: Test Teerank services
+on: push
+
+jobs:
+  test-graphql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-graphql
+          dependencies: graphql dgraph
+
+  test-gql-client:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-gql-client
+          dependencies: graphql dgraph
+
+  test-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-database
+          dependencies: graphql dgraph
+
+  test-poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-poll
+          dependencies: graphql dgraph
+
+  test-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-update
+          dependencies: graphql dgraph
+
+  test-rank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ./.github/actions/test
+        with:
+          service: test-rank
+          dependencies: graphql dgraph

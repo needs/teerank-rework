@@ -1,15 +1,67 @@
 services:
-  frontend:
-    build:
-      dockerfile: frontend/Dockerfile
-      target: production
-    ports:
-      - "80:8080"
+  dgraph:
+    image: dgraph/standalone
+    expose:
+      - 8080
 
-  backend:
+  graphql:
     build:
-      dockerfile: backend/Dockerfile
+      dockerfile: graphql/Dockerfile
       target: production
-    ports:
-      - "8311:8311/udp"
+    tty: true
+    depends_on:
+      - dgraph
+    expose:
+      - 8080
 
+  test-graphql:
+    build:
+      dockerfile: graphql/Dockerfile
+      target: test
+    depends_on:
+      - graphql
+
+  test-gql-client:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: gql-client
+    depends_on:
+      - graphql
+
+  test-database:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: database
+    depends_on:
+      - graphql
+
+  test-poll:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: poll
+    depends_on:
+      - graphql
+
+  test-update:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: update
+    depends_on:
+      - graphql
+
+  test-rank:
+    build:
+      dockerfile: config/python/Dockerfile
+      target: test
+      args:
+        project: rank
+    depends_on:
+      - graphql

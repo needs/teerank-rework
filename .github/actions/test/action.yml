@@ -1,0 +1,30 @@
+name: 'Test a service'
+description: 'Build service and its dependencies, run them and clean afterward.'
+
+inputs:
+  service:
+    required: true
+    type: string
+  dependencies:
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cleanup tests environment
+      run: docker compose -p teerank-${{ inputs.service }} rm -f -s
+      shell: bash
+
+    - name: Build tests
+      run: docker compose -p teerank-${{ inputs.service }} build -q ${{ inputs.service }} ${{ inputs.dependencies }}
+      shell: bash
+
+    - name: Test
+      run: docker compose -p teerank-${{ inputs.service }} run -T ${{ inputs.service }}
+      shell: bash
+
+    - name: Stop tests
+      if: always()
+      run: docker compose -p teerank-${{ inputs.service }} stop
+      shell: bash
