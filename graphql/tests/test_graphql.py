@@ -4,73 +4,77 @@ import pytest
 import requests
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.exceptions import TransportQueryError
 
 
-@pytest.fixture(name="client")
-def fixture_client():
-    """Create a GraphQL client."""
-    address = "graphql:8080"
+@pytest.fixture(name="client_dgraph", scope="session")
+def fixture_client_dgraph():
+    """Create a GraphQL pointing directly to dgraph:8080."""
+    return Client(transport=AIOHTTPTransport(url="http://dgraph:8080/graphql"))
 
+
+@pytest.fixture(name="client_graphql", scope="session")
+def fixture_client_graphql():
+    """Create a GraphQL pointing directly to graphql:8080."""
+    return Client(transport=AIOHTTPTransport(url="http://graphql:8080/graphql"))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fixture_reset_database():
+    """
+    Reset database to an empty state.
+
+    Tests don't need the database to be empty, so emptying database is only done
+    at the beginning of the test session.
+    """
     schema = """
         type Test {
             string: String
         }
     """
 
-    requests.post(f"http://{address}/alter", data='{"drop_all": true}')
-    requests.post(f"http://{address}/admin/schema", data=schema)
-    return Client(transport=AIOHTTPTransport(url=f"http://{address}/graphql"))
+    response = requests.post(f"http://dgraph:8080/alter", data='{"drop_all": true}')
+    assert response.status_code == 200 and "errors" not in response.json()
+
+    response = requests.post(f"http://dgraph:8080/admin/schema", data=schema)
+    assert response.status_code == 200 and "errors" not in response.json()
 
 
-@pytest.fixture(name="store")
-def fixture_store(client):
-    """Create a function to store a Test."""
-
-    def do(test):
-        """Store the given test."""
-        return client.execute(
-            gql(
-                """
-                mutation ($test: AddTestInput!) {
-                    addTest(input: [$test]) {
-                        test {
-                            string
-                        }
-                    }
+def store_string(client, string):
+    """Store the given string in the database."""
+    query = gql(
+        """
+        mutation ($test: AddTestInput!) {
+            addTest(input: [$test]) {
+                test {
+                    string
                 }
-                """
-            ),
-            {"test": test},
-        )["addTest"]["test"][0]
+            }
+        }
+        """
+    )
 
-    return do
+    variables = {
+        "test": {
+            "string": string,
+        }
+    }
 
-
-@pytest.fixture(name="query")
-def fixture_query(client):
-    """Create a function to query all Test."""
-
-    def do():
-        """Query all Tests."""
-        return client.execute(
-            gql(
-                """
-                query {
-                    queryTest {
-                        string
-                    }
-                }
-                """
-            )
-        )["queryTest"]
-
-    return do
+    return client.execute(query, variables)["addTest"]["test"][0]["string"]
 
 
-@pytest.mark.parametrize(
-    "string", ["foo", "bar", "\x00", "\U000e0021", "\U000f0009", "\v", "\n", "null"]
+pytestmark = pytest.mark.parametrize(
+    "string",
+    [
+        "\x00",
+        "\U000e0021",
+        "\U000f0009",
+        "\v",
+    ],
 )
-def test_bad_encoding(store, string):
+
+
+def test_bug(client_dgraph, string):
     """
     Test Dgraph encoding bug is fixed.
 
@@ -79,8 +83,12 @@ def test_bad_encoding(store, string):
     send user data to Dgraph, therefor a malicious user can use those escape
     sequence to make some query fail.
     """
-    test = {
-        "string": string,
-    }
+    with pytest.raises(TransportQueryError):
+        store_string(client_dgraph, string)
 
-    assert test == store(test)
+
+def test_fix(client_graphql, string):
+    """
+    Test GraphQL gateway on the problematic string.
+    """
+    assert store_string(client_graphql, string) == string
