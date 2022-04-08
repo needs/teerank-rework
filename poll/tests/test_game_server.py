@@ -321,12 +321,8 @@ def test_game_server_wrong_packet_type(game_server):
     packet.pack_bytes(b"\x00" * 10)
     packet.pack_bytes(b"xxxx")
 
-    try:
+    with pytest.raises(PacketException):
         game_server.process_packet(packet)
-    except Exception as exception:
-        assert isinstance(exception, PacketException)
-    else:
-        assert False
 
 
 def test_game_server_wrong_token(game_server):
@@ -344,9 +340,5 @@ def test_game_server_wrong_token(game_server):
 
     packet.pack_int(int.from_bytes(token, byteorder="big"))
 
-    try:
+    with pytest.raises(PacketException):
         game_server.process_packet(packet)
-    except Exception as exception:
-        assert isinstance(exception, PacketException)
-    else:
-        assert False
