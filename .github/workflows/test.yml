@@ -26,18 +26,6 @@ jobs:
           service: test-gql-client
           dependencies: graphql dgraph
 
-  test-database:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-
-      - name: Run tests
-        uses: ./.github/actions/test
-        with:
-          service: test-database
-          dependencies: graphql dgraph
-
   test-poll:
     runs-on: ubuntu-latest
     steps:

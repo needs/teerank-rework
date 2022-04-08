@@ -1,8 +1,8 @@
-"""Implement "all_servers" RPC."""
+"""Query all game servers and master servers."""
 
 import datetime
 
-import database_pb2
+from gql import gql
 
 DEFAULT_MASTER_SERVERS_ADDRESS = {
     "master1.teeworlds.com:8300",
@@ -20,13 +20,15 @@ def add_master_servers(dgraph, addresses):
     down_since = datetime.datetime.min.isoformat()
 
     dgraph.execute(
-        """
-        mutation($master_servers: [AddMasterServerInput!]!) {
-            addMasterServer(input: $master_servers) {
-                numUids
+        gql(
+            """
+            mutation($master_servers: [AddMasterServerInput!]!) {
+                addMasterServer(input: $master_servers) {
+                    numUids
+                }
             }
-        }
-        """,
+            """
+        ),
         {
             "master_servers": [
                 {
@@ -39,25 +41,27 @@ def add_master_servers(dgraph, addresses):
     )
 
 
-def run(dgraph) -> database_pb2.AllServersResponse:
-    """Implement "all_servers" RPC."""
+def all_servers(dgraph) -> tuple[list[str], list[str]]:
+    """Query all game servers and master servers."""
     query = dgraph.execute(
-        """
-        query {
-            queryGameServer {
-                address
+        gql(
+            """
+            query {
+                queryGameServer {
+                    address
+                }
+                queryMasterServer {
+                    address
+                }
             }
-            queryMasterServer {
-                address
-            }
-        }
-        """
+            """
+        )
     )
 
     master_servers_address = {s["address"] for s in query["queryMasterServer"]}
     add_master_servers(dgraph, DEFAULT_MASTER_SERVERS_ADDRESS - master_servers_address)
 
-    return database_pb2.AllServersResponse(
-        game_servers_address=[s["address"] for s in query["queryGameServer"]],
-        master_servers_address=master_servers_address | DEFAULT_MASTER_SERVERS_ADDRESS,
+    return (
+        list(master_servers_address | DEFAULT_MASTER_SERVERS_ADDRESS),
+        [game_server["address"] for game_server in query["queryGameServer"]],
     )

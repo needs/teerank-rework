@@ -46,5 +46,7 @@ RUN python -m grpc_tools.protoc -Iprotos --mypy_out=protos protos/*.proto
 COPY $project/tests tests
 COPY config/python/tests/setup.cfg setup.cfg
 
+COPY config/schema.graphql config/schema.graphql
+
 # Run service.
 CMD [ "pytest" ]

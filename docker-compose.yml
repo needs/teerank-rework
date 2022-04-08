@@ -37,15 +37,6 @@ services:
     depends_on:
       - graphql
 
-  test-database:
-    build:
-      dockerfile: config/python/Dockerfile
-      target: test
-      args:
-        project: database
-    depends_on:
-      - graphql
-
   test-poll:
     build:
       dockerfile: config/python/Dockerfile
