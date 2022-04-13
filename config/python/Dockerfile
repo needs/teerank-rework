@@ -7,7 +7,7 @@ FROM python:3 AS production
 ARG project
 
 WORKDIR /usr/src/app
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/sources:/usr/src/app/protos"
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/sources:/usr/src/app/protos:/usr/src/app/packages"
 
 # Install dependencies.
 COPY config/python/sources/requirements.txt sources/requirements-config.txt
@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir \
 COPY $project/sources sources
 
 # Copy gql_client package.
-COPY gql_client/sources gql_client
+COPY gql_client/sources packages/gql_client
 
 # Generate proto files.
 COPY config/protos protos

@@ -1,12 +1,11 @@
 """Test all_servers()."""
 
-import http.client
 import json
+from http.client import HTTPConnection
 
 import pytest
 from all_servers import DEFAULT_MASTER_SERVERS_ADDRESS, add_master_servers, all_servers
-from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport
+from gql_client import GQLClient
 
 
 @pytest.fixture(name="client")
@@ -16,7 +15,7 @@ def fixture_client():
         schema = file.read()
 
     address = "graphql:8080"
-    connection = http.client.HTTPConnection(address)
+    connection = HTTPConnection(address)
 
     connection.request("POST", "/alter", '{"drop_all": true}')
     response = connection.getresponse()
@@ -26,21 +25,19 @@ def fixture_client():
     response = connection.getresponse()
     assert response.status == 200 and "errors" not in json.loads(response.read())
 
-    return Client(transport=AIOHTTPTransport(url=f"http://{address}/graphql"))
+    return GQLClient(connection, "/graphql")
 
 
 def add_game_servers(client, addresses):
     """Add game servers."""
     client.execute(
-        gql(
-            """
-            mutation($game_servers: [AddGameServerInput!]!) {
-                addGameServer(input: $game_servers) {
-                    numUids
-                }
+        """
+        mutation($game_servers: [AddGameServerInput!]!) {
+            addGameServer(input: $game_servers) {
+                numUids
             }
-            """
-        ),
+        }
+        """,
         {"game_servers": [{"address": address} for address in addresses]},
     )
 

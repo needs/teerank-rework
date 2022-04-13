@@ -1,5 +1,6 @@
 """Launch poll service."""
 
+from http.client import HTTPConnection
 from socket import AF_INET, SOCK_DGRAM, gethostname
 from socket import socket as Socket
 from time import sleep
@@ -10,8 +11,7 @@ import rank_pb2_grpc
 import update_pb2_grpc
 from all_servers import all_servers
 from game_server import GameServer
-from gql import Client
-from gql.transport.aiohttp import AIOHTTPTransport
+from gql_client import GQLClient
 from master_server import MasterServer
 from server_pool import ServerPool
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     server_pool = ServerPool(socket)
 
-    client = Client(transport=AIOHTTPTransport(url="http://graphql:8080/graphql"))
+    client = GQLClient(HTTPConnection(url="graphql:8080"), "/graphql")
     master_servers_address, game_servers_address = all_servers(client)
 
     for address in master_servers_address:

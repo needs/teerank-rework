@@ -2,8 +2,6 @@
 
 import datetime
 
-from gql import gql
-
 DEFAULT_MASTER_SERVERS_ADDRESS = {
     "master1.teeworlds.com:8300",
     "master2.teeworlds.com:8300",
@@ -12,23 +10,21 @@ DEFAULT_MASTER_SERVERS_ADDRESS = {
 }
 
 
-def add_master_servers(dgraph, addresses):
+def add_master_servers(graphql, addresses):
     """Add master servers."""
     if not addresses:
         return
 
     down_since = datetime.datetime.min.isoformat()
 
-    dgraph.execute(
-        gql(
-            """
-            mutation($master_servers: [AddMasterServerInput!]!) {
-                addMasterServer(input: $master_servers) {
-                    numUids
-                }
+    graphql.execute(
+        """
+        mutation($master_servers: [AddMasterServerInput!]!) {
+            addMasterServer(input: $master_servers) {
+                numUids
             }
-            """
-        ),
+        }
+        """,
         {
             "master_servers": [
                 {
@@ -41,25 +37,23 @@ def add_master_servers(dgraph, addresses):
     )
 
 
-def all_servers(dgraph) -> tuple[list[str], list[str]]:
+def all_servers(graphql) -> tuple[list[str], list[str]]:
     """Query all game servers and master servers."""
-    query = dgraph.execute(
-        gql(
-            """
-            query {
-                queryGameServer {
-                    address
-                }
-                queryMasterServer {
-                    address
-                }
+    query = graphql.execute(
+        """
+        query {
+            queryGameServer {
+                address
             }
-            """
-        )
+            queryMasterServer {
+                address
+            }
+        }
+        """
     )
 
     master_servers_address = {s["address"] for s in query["queryMasterServer"]}
-    add_master_servers(dgraph, DEFAULT_MASTER_SERVERS_ADDRESS - master_servers_address)
+    add_master_servers(graphql, DEFAULT_MASTER_SERVERS_ADDRESS - master_servers_address)
 
     return (
         list(master_servers_address | DEFAULT_MASTER_SERVERS_ADDRESS),
