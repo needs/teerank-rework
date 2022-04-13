@@ -1,15 +1,15 @@
-"""Simple GraphQL client."""
+"""Implement GQLClient class."""
 
 import json
 
 
-class GraphQLException(Exception):
+class GQLException(Exception):
     pass
 
 
-class GraphQLClient:
+class GQLClient:
     def __init__(self, connection, path: str = None):
-        """Initialize GraphQLClient."""
+        """Initialize GQLClient."""
         self.connection = connection
         self.path = path if path is not None else "/graphql"
 
@@ -32,6 +32,6 @@ class GraphQLClient:
         response = json.loads(self.connection.getresponse().read())
 
         if "errors" in response:
-            raise GraphQLException(response["errors"])
+            raise GQLException(response["errors"])
 
         return response["data"]

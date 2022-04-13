@@ -1,15 +1,15 @@
-"""Test GraphQLClient."""
+"""Test GQLClient."""
 
 import http.client
 import json
 
 import pytest
-from gql_client import GraphQLClient
+from gql_client import GQLClient
 
 
 @pytest.fixture(name="client")
 def fixture_client():
-    """Create a GraphQLClient with an empty database and a test schema."""
+    """Create a GQLClient with an empty database and a test schema."""
     schema = """
         type Test {
             string: String @search(by: [hash])
@@ -26,7 +26,7 @@ def fixture_client():
     response = connection.getresponse()
     assert response.status == 200 and "errors" not in json.loads(response.read())
 
-    return GraphQLClient(connection, "/graphql")
+    return GQLClient(connection, "/graphql")
 
 
 @pytest.mark.parametrize(
