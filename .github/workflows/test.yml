@@ -14,7 +14,7 @@ jobs:
           service: test-graphql
           dependencies: graphql dgraph
 
-  test-gql-client:
+  test-gql_client:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -23,7 +23,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/test
         with:
-          service: test-gql-client
+          service: test-gql_client
           dependencies: graphql dgraph
 
   test-poll:

@@ -4,7 +4,8 @@ import http.client
 import json
 
 import pytest
-from gql_client import GQLClient
+
+from gql_client import GQLClient  # isort:skip
 
 
 @pytest.fixture(name="client")

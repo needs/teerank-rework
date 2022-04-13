@@ -28,12 +28,12 @@ services:
     depends_on:
       - graphql
 
-  test-gql-client:
+  test-gql_client:
     build:
       dockerfile: config/python/Dockerfile
       target: test
       args:
-        project: gql-client
+        project: gql_client
     depends_on:
       - graphql
 

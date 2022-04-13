@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir \
 # Copy sources.
 COPY $project/sources sources
 
+# Copy gql_client package.
+COPY gql_client/sources gql_client
+
 # Generate proto files.
 COPY config/protos protos
 RUN python -m grpc_tools.protoc -Iprotos --python_out=protos --grpc_python_out=protos protos/*.proto
