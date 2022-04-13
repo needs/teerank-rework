@@ -29,7 +29,7 @@ def fixture_reset_database():
     """
     schema = """
         type Test {
-            string: String
+            string: String @search(by: [hash])
         }
     """
 
@@ -44,7 +44,7 @@ def store_string(client, string):
     """Store the given string in the database."""
     query = gql(
         """
-        mutation ($test: AddTestInput!) {
+        mutation($test: AddTestInput!) {
             addTest(input: [$test]) {
                 test {
                     string
@@ -63,32 +63,48 @@ def store_string(client, string):
     return client.execute(query, variables)["addTest"]["test"][0]["string"]
 
 
+def get_string(client, string):
+    """Return the given string as stored in the database."""
+    query = gql(
+        """
+        query($string: String) {
+            queryTest(filter: {string: {eq: $string}}) {
+                string
+            }
+        }
+        """
+    )
+
+    variables = {"string": string}
+
+    return client.execute(query, variables)["queryTest"][0]["string"]
+
+
 pytestmark = pytest.mark.parametrize(
     "string",
-    [
-        "\x00",
-        "\U000e0021",
-        "\U000f0009",
-        "\v",
-    ],
+    # Known characters that confuses Dgraph Lexer.
+    ["\x00", "\U000e0021", "\U000f0009"],
 )
 
 
 def test_bug(client_dgraph, string):
     """
-    Test Dgraph encoding bug is fixed.
+    Test that Dgraph still has the lexer bug.
 
     The bug happen when some escape sequences are given to the Dgraph lexer.  It
-    then freak out and reject the query.  This is problematic for us because we
+    then freaks out and reject the query.  This is problematic for us because we
     send user data to Dgraph, therefor a malicious user can use those escape
     sequence to make some query fail.
+
+    Don't ask why, but storing the string doesn't trigger the bug, while
+    querying it does.
     """
+    assert store_string(client_dgraph, string) == string
     with pytest.raises(TransportQueryError):
-        store_string(client_dgraph, string)
+        get_string(client_dgraph, string) == string
 
 
 def test_fix(client_graphql, string):
-    """
-    Test GraphQL gateway on the problematic string.
-    """
+    """Test GraphQL gateway on the problematic string."""
     assert store_string(client_graphql, string) == string
+    assert get_string(client_graphql, string) == string
