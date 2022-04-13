@@ -1,33 +1,28 @@
 """Test GQLClient."""
 
-import http.client
-import json
+from http.client import HTTPConnection
 
 import pytest
 
-from gql_client import GQLClient  # isort:skip
+from gql_client_dgraph import GQLClientDgraph  # isort:skip
 
 
 @pytest.fixture(name="client")
 def fixture_client():
     """Create a GQLClient with an empty database and a test schema."""
-    schema = """
+    client = GQLClientDgraph(HTTPConnection("graphql:8080"), "/graphql")
+
+    client.drop_all()
+
+    client.set_schema(
+        """
         type Test {
             string: String @search(by: [hash])
         }
-    """
+        """
+    )
 
-    connection = http.client.HTTPConnection("graphql:8080")
-
-    connection.request("POST", "/alter", '{"drop_all": true}')
-    response = connection.getresponse()
-    assert response.status == 200 and "errors" not in json.loads(response.read())
-
-    connection.request("POST", "/admin/schema", schema)
-    response = connection.getresponse()
-    assert response.status == 200 and "errors" not in json.loads(response.read())
-
-    return GQLClient(connection, "/graphql")
+    return client
 
 
 @pytest.mark.parametrize(

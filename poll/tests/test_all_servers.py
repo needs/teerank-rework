@@ -1,31 +1,23 @@
 """Test all_servers()."""
 
-import json
 from http.client import HTTPConnection
 
 import pytest
 from all_servers import DEFAULT_MASTER_SERVERS_ADDRESS, add_master_servers, all_servers
-from gql_client import GQLClient
+from gql_client import GQLClientDgraph
 
 
 @pytest.fixture(name="client")
 def fixture_client():
-    """Create a Client with an empty database and the production schema."""
+    """Create a GQLClient with an empty database and the production schema."""
     with open("config/schema.graphql", "r") as file:
         schema = file.read()
 
-    address = "graphql:8080"
-    connection = HTTPConnection(address)
+    client = GQLClientDgraph(HTTPConnection("graphql:8080"), "/graphql")
+    client.drop_all()
+    client.set_schema(schema)
 
-    connection.request("POST", "/alter", '{"drop_all": true}')
-    response = connection.getresponse()
-    assert response.status == 200 and "errors" not in json.loads(response.read())
-
-    connection.request("POST", "/admin/schema", schema)
-    response = connection.getresponse()
-    assert response.status == 200 and "errors" not in json.loads(response.read())
-
-    return GQLClient(connection, "/graphql")
+    return client
 
 
 def add_game_servers(client, addresses):
